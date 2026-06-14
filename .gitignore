@@ -1,0 +1,64 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+myenv/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Instance folder (SQLite DBs, uploads)
+instance/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ML model artifacts (generated, often large)
+models/*.pkl
+models/*.h5
+models/*.pt
+models/*.keras
+models/*.joblib
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+package-lock.json
+package.json
+
+# Reports (generated PDFs)
+reports/*.pdf
+
+# Kimchi harness
+.kimchi/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Misc
+get-pip.py

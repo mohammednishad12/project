@@ -1,0 +1,254 @@
+/* Dashboard Custom Styles */
+
+/* Map Container */
+#crimeMap {
+    border-radius: 0 0 0.375rem 0.375rem;
+    z-index: 1;
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card .card-body {
+    padding: 1.25rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    line-height: 1.2;
+}
+
+.stat-subtitle {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* Filter Sidebar */
+.filter-sidebar {
+    position: sticky;
+    top: 1rem;
+    height: fit-content;
+}
+
+.filter-card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.filter-card .card-header {
+    padding: 1rem 1.25rem;
+}
+
+.filter-card .card-body {
+    padding: 1.25rem;
+}
+
+.filter-card .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.filter-card .form-select[multiple] {
+    height: auto;
+    min-height: 150px;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.chart-container-line {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+/* Time Period Toggle */
+.time-toggle.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Cards General */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Map Controls */
+#toggle-heatmap.active,
+#toggle-points.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile Responsive */
+@media (max-width: 767.98px) {
+    .stat-card {
+        margin-bottom: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .filter-sidebar {
+        position: relative;
+        top: 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-card .card-body {
+        padding: 1rem;
+    }
+    
+    .chart-container,
+    .chart-container-line {
+        height: 250px;
+    }
+    
+    #crimeMap {
+        height: 350px !important;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Tablet Responsive */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .chart-container {
+        height: 250px;
+    }
+    
+    .chart-container-line {
+        height: 200px;
+    }
+}
+
+/* Leaflet Custom Styles */
+.leaflet-popup-content-wrapper {
+    border-radius: 0.5rem;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+    margin: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.leaflet-popup-content strong {
+    color: #333;
+}
+
+/* Scrollbar Styling for Multi-select */
+select[multiple]::-webkit-scrollbar {
+    width: 8px;
+}
+
+select[multiple]::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+select[multiple]::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+select[multiple]::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Alert Animations */
+.alert {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading State */
+.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Button Hover Effects */
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Card Hover Effect */
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Badge Styling */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Heatmap Legend Custom */
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+
+/* Utility Classes */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

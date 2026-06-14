@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Crime Data System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm mt-5">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-person-plus-fill text-success me-2"></i>Create Account
+                    </h2>
+                    <p class="text-muted text-center mb-4">Register to access the Crime Data System</p>
+
+                    <!-- Registration Form -->
+                    <form id="registerForm" method="POST" action="/auth/register">
+                        <!-- CSRF Token Placeholder -->
+                        <span id="csrfToken" style="display:none;"></span>
+                        <input type="hidden" name="csrf_token" value="" id="csrfInput">
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       required minlength="3" maxlength="80" autofocus
+                                       placeholder="Choose a username (3-80 characters)">
+                            </div>
+                            <div class="form-text">Must be 3-80 characters long</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       required placeholder="Enter your email address">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       required minlength="6" placeholder="Create a password (6+ characters)">
+                            </div>
+                            <div class="form-text">Must be at least 6 characters long</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                <input type="password" class="form-control" id="confirm_password"
+                                       name="confirm_password" required minlength="6"
+                                       placeholder="Confirm your password">
+                            </div>
+                            <div id="passwordMatch" class="form-text text-danger d-none">
+                                <i class="bi bi-x-circle"></i> Passwords do not match
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Account Type</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield"></i></span>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="viewer" selected>Viewer - Access dashboards and reports</option>
+                                    <option value="admin">Admin - Full system access</option>
+                                </select>
+                            </div>
+                            <div class="form-text">Select "Admin" only if you have authorization</div>
+                        </div>
+
+                        <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+                        <div id="successAlert" class="alert alert-success d-none" role="alert"></div>
+
+                        <button type="submit" class="btn btn-success w-100" id="registerBtn">
+                            <span id="registerSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+                            <span id="registerText">Create Account</span>
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        Already have an account?
+                        <a href="/auth/login" class="text-decoration-none">Sign in here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const passwordMatch = document.getElementById('passwordMatch');
+    const errorAlert = document.getElementById('errorAlert');
+    const successAlert = document.getElementById('successAlert');
+    const registerBtn = document.getElementById('registerBtn');
+    const registerSpinner = document.getElementById('registerSpinner');
+    const registerText = document.getElementById('registerText');
+
+    // Client-side password match validation
+    function validatePasswordMatch() {
+        if (confirmPassword.value && password.value !== confirmPassword.value) {
+            passwordMatch.classList.remove('d-none');
+            return false;
+        } else {
+            passwordMatch.classList.add('d-none');
+            return true;
+        }
+    }
+
+    password.addEventListener('input', validatePasswordMatch);
+    confirmPassword.addEventListener('input', validatePasswordMatch);
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validate password match
+        if (!validatePasswordMatch()) {
+            return;
+        }
+
+        // Hide previous alerts
+        errorAlert.classList.add('d-none');
+        successAlert.classList.add('d-none');
+
+        // Show loading state
+        registerBtn.disabled = true;
+        registerSpinner.classList.remove('d-none');
+        registerText.textContent = 'Creating account...';
+
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        const role = document.getElementById('role').value;
+
+        try {
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password: password.value,
+                    role
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                successAlert.textContent = data.message || 'Registration successful! Redirecting to login...';
+                successAlert.classList.remove('d-none');
+
+                // Clear form
+                form.reset();
+
+                // Redirect to login after short delay
+                setTimeout(function() {
+                    window.location.href = '/auth/login';
+                }, 1500);
+            } else {
+                errorAlert.textContent = data.error || 'Registration failed. Please try again.';
+                errorAlert.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorAlert.textContent = 'An error occurred. Please try again.';
+            errorAlert.classList.remove('d-none');
+        } finally {
+            registerBtn.disabled = false;
+            registerSpinner.classList.add('d-none');
+            registerText.textContent = 'Create Account';
+        }
+    });
+});
+</script>
+{% endblock %}

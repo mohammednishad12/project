@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Crime Data System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card shadow-sm mt-5">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-shield-lock-fill text-primary me-2"></i>Login
+                    </h2>
+                    <p class="text-muted text-center mb-4">Sign in to access the Crime Data System</p>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" method="POST" action="/auth/login">
+                        <!-- CSRF Token Placeholder -->
+                        <span id="csrfToken" style="display:none;"></span>
+                        <input type="hidden" name="csrf_token" value="" id="csrfInput">
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       required autofocus placeholder="Enter your username">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       required placeholder="Enter your password">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember">
+                            <label class="form-check-label" for="remember">Remember me</label>
+                        </div>
+
+                        <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                            <span id="loginSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+                            <span id="loginText">Sign In</span>
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        Don't have an account?
+                        <a href="/auth/register" class="text-decoration-none">Register here</a>
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-center text-muted mt-3">
+                <small>Demo credentials: admin / admin123</small>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const errorAlert = document.getElementById('errorAlert');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginSpinner = document.getElementById('loginSpinner');
+    const loginText = document.getElementById('loginText');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Hide previous error
+        errorAlert.classList.add('d-none');
+
+        // Show loading state
+        loginBtn.disabled = true;
+        loginSpinner.classList.remove('d-none');
+        loginText.textContent = 'Signing in...';
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Store tokens
+                if (data.access_token) {
+                    localStorage.setItem('access_token', data.access_token);
+                }
+                if (data.refresh_token) {
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                }
+
+                // Redirect to dashboard or intended page
+                const redirect = new URLSearchParams(window.location.search).get('redirect') || '/dashboard';
+                window.location.href = redirect;
+            } else {
+                errorAlert.textContent = data.error || 'Login failed. Please try again.';
+                errorAlert.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorAlert.textContent = 'An error occurred. Please try again.';
+            errorAlert.classList.remove('d-none');
+        } finally {
+            loginBtn.disabled = false;
+            loginSpinner.classList.add('d-none');
+            loginText.textContent = 'Sign In';
+        }
+    });
+});
+</script>
+{% endblock %}

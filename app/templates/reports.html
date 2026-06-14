@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Crime Data System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #16213e;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #4a4a6a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-generate {
+        background: linear-gradient(135deg, #16213e, #1a1a2e);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(22, 33, 62, 0.4);
+        color: white;
+    }
+    
+    .btn-download {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-download-pdf {
+        background: #dc3545;
+        color: white;
+        border: none;
+    }
+    
+    .btn-download-pdf:hover:not(:disabled) {
+        background: #c82333;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-download-csv {
+        background: #28a745;
+        color: white;
+        border: none;
+    }
+    
+    .btn-download-csv:hover:not(:disabled) {
+        background: #218838;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-download:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    /* Preview Cards */
+    .preview-card {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 10px;
+        padding: 1.25rem;
+        text-align: center;
+        transition: transform 0.2s ease;
+    }
+    
+    .preview-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .preview-card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #16213e;
+        line-height: 1.2;
+    }
+    
+    .preview-card-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .trend-up {
+        color: #dc3545;
+    }
+    
+    .trend-down {
+        color: #28a745;
+    }
+    
+    .trend-stable {
+        color: #6c757d;
+    }
+    
+    /* Preview Table */
+    .preview-table {
+        margin-top: 1.5rem;
+    }
+    
+    .preview-table th {
+        background: #16213e;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.75rem;
+    }
+    
+    .preview-table td {
+        padding: 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .preview-table tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    /* Hotspot List */
+    .hotspot-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hotspot-rank {
+        width: 32px;
+        height: 32px;
+        background: #16213e;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+    
+    .hotspot-info {
+        flex: 1;
+        margin-left: 1rem;
+    }
+    
+    .hotspot-district {
+        font-weight: 600;
+        color: #16213e;
+    }
+    
+    .hotspot-coords {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    
+    .hotspot-count {
+        font-weight: 700;
+        color: #16213e;
+        font-size: 1.125rem;
+    }
+    
+    /* Loading Spinner */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e9ecef;
+        border-top-color: #16213e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Alert */
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title" style="font-size: 2rem; font-weight: 700; color: #16213e;">
+                <i class="bi bi-file-earmark-text me-2"></i>Report Generation
+            </h1>
+            <p class="text-muted">Configure and generate custom crime data reports</p>
+        </div>
+    </div>
+    
+    <!-- Section 1: Report Configuration -->
+    <div class="report-section">
+        <h2 class="section-title">
+            <i class="bi bi-gear"></i>Report Configuration
+        </h2>
+        
+        <form id="reportForm">
+            <div class="row g-4">
+                <!-- Region/District -->
+                <div class="col-md-6">
+                    <label for="region" class="form-label">Region/District</label>
+                    <select class="form-select" id="region" name="region">
+                        <option value="">All Regions</option>
+                        <option value="Central">Central</option>
+                        <option value="North">North</option>
+                        <option value="South">South</option>
+                        <option value="East">East</option>
+                        <option value="West">West</option>
+                        <option value="Downtown">Downtown</option>
+                        <option value="Midtown">Midtown</option>
+                        <option value="Uptown">Uptown</option>
+                    </select>
+                </div>
+                
+                <!-- Start Date -->
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="start">
+                </div>
+                
+                <!-- End Date -->
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="end">
+                </div>
+                
+                <!-- Crime Types -->
+                <div class="col-12">
+                    <label class="form-label">Crime Types</label>
+                    <div class="row g-2" id="crimeTypesContainer">
+                        <!-- Populated dynamically from /api/crimes/types -->
+                    </div>
+                </div>
+                
+                <!-- Generate Button -->
+                <div class="col-12 text-center mt-4">
+                    <button type="submit" class="btn btn-generate">
+                        <i class="bi bi-eye me-2"></i>Generate Preview
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Section 2: Preview Panel (hidden by default) -->
+    <div class="report-section" id="previewSection" style="display: none;">
+        <h2 class="section-title">
+            <i class="bi bi-clipboard-data"></i>Report Preview
+        </h2>
+        
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="preview-card">
+                    <div class="preview-card-value" id="totalCrimes">0</div>
+                    <div class="preview-card-label">Total Crimes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="preview-card">
+                    <div class="preview-card-value" id="topCrimeType">N/A</div>
+                    <div class="preview-card-label">Top Crime Type</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="preview-card">
+                    <div class="preview-card-value" id="trendDirection">
+                        <span class="trend-stable">→</span>
+                    </div>
+                    <div class="preview-card-label">Trend</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="preview-card">
+                    <div class="preview-card-value" id="dateRange">N/A</div>
+                    <div class="preview-card-label">Date Range</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monthly Breakdown Table -->
+        <h5 class="mb-3" style="color: #16213e;">Monthly Breakdown</h5>
+        <div class="table-responsive preview-table">
+            <table class="table table-bordered" id="monthlyTable">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Count</th>
+                        <th>Top Type</th>
+                        <th>Change</th>
+                    </tr>
+                </thead>
+                <tbody id="monthlyTableBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Top Hotspots -->
+        <h5 class="mb-3 mt-4" style="color: #16213e;">Top Hotspots</h5>
+        <div id="hotspotsList"></div>
+    </div>
+    
+    <!-- Section 3: Download Buttons -->
+    <div class="report-section" id="downloadSection" style="display: none;">
+        <h2 class="section-title">
+            <i class="bi bi-download"></i>Download Reports
+        </h2>
+        
+        <div class="row g-3 justify-content-center">
+            <div class="col-md-4">
+                <button type="button" class="btn btn-download btn-download-pdf w-100" id="downloadPdfBtn">
+                    <i class="bi bi-file-pdf me-2"></i>Download PDF Report
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-download btn-download-csv w-100" id="downloadCsvBtn">
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download CSV Report
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Alert -->
+    <div class="alert alert-error" id="errorAlert" style="display: none;"></div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center">
+        <div class="spinner mx-auto mb-3"></div>
+        <p class="text-muted">Generating report preview...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

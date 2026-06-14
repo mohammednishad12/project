@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Search Crimes - Crime Data System{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .search-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    .search-input-group {
+        position: relative;
+        max-width: 600px;
+    }
+    .search-input-group .form-control {
+        padding-left: 45px;
+        border-radius: 50px;
+        border: none;
+        height: 50px;
+        font-size: 1.1rem;
+    }
+    .search-input-group .search-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+    .filter-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+    .filter-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    .results-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        border-top: none;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+    .table th:hover {
+        background-color: #e9ecef;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .sort-icon {
+        margin-left: 5px;
+        opacity: 0.5;
+    }
+    .sort-icon.active {
+        opacity: 1;
+        color: #0d6efd;
+    }
+    .pagination-info {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    .no-results i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+    .loading-spinner.show {
+        display: block;
+    }
+    .mini-chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        height: 250px;
+        position: relative;
+    }
+    .mini-chart-container canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+    .mini-chart-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+    .badge-type {
+        font-size: 0.8rem;
+        padding: 0.35em 0.65em;
+    }
+    @media (max-width: 768px) {
+        .search-section {
+            padding: 1.5rem 0;
+        }
+        .filter-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Search Header Section -->
+<section class="search-section">
+    <div class="container">
+        <h2 class="mb-3"><i class="bi bi-search me-2"></i>Search Crimes</h2>
+        <p class="mb-0 opacity-75">Search and filter crime records with real-time results</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card filter-card">
+                <div class="card-body">
+                    <!-- Full-text Search -->
+                    <form id="searchForm" class="mb-4">
+                        <div class="d-flex justify-content-center">
+                            <div class="search-input-group w-100">
+                                <i class="bi bi-search search-icon"></i>
+                                <input type="text" class="form-control" id="searchQuery"
+                                       placeholder="Search by area, description, address, or crime type..."
+                                       name="query">
+                            </div>
+                        </div>
+
+                        <!-- Filters Row -->
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-3">
+                                <label class="filter-label">Area</label>
+                                <select class="form-select" id="filterArea" name="area">
+                                    <option value="">All Areas</option>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="filter-label">Crime Type</label>
+                                <select class="form-select" id="filterType" name="type">
+                                    <option value="">All Types</option>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="filter-label">Start Date</label>
+                                <input type="date" class="form-control" id="filterStart" name="start">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="filter-label">End Date</label>
+                                <input type="date" class="form-control" id="filterEnd" name="end">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="filter-label">Time of Day</label>
+                                <select class="form-select" id="filterTimeOfDay" name="time_of_day">
+                                    <option value="">All Times</option>
+                                    <option value="Morning">Morning (6-12)</option>
+                                    <option value="Afternoon">Afternoon (12-18)</option>
+                                    <option value="Evening">Evening (18-24)</option>
+                                    <option value="Night">Night (0-6)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="row g-3 mt-3">
+                            <div class="col-12 text-end">
+                                <button type="button" class="btn btn-outline-secondary" id="clearFilters">
+                                    <i class="bi bi-x-circle me-1"></i>Clear Filters
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="searchBtn">
+                                    <i class="bi bi-search me-1"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Searching...</p>
+    </div>
+
+    <!-- Mini Charts -->
+    <div class="row mb-4" id="miniChartsSection" style="display: none;">
+        <div class="col-md-6">
+            <div class="mini-chart-container">
+                <div class="mini-chart-title">
+                    <i class="bi bi-bar-chart me-1"></i>Crimes by Type
+                </div>
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mini-chart-container">
+                <div class="mini-chart-title">
+                    <i class="bi bi-graph-up me-1"></i>Crimes Over Time
+                </div>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="row" id="resultsSection">
+        <div class="col-12">
+            <div class="card results-card">
+                <div class="card-body">
+                    <!-- Pagination Info -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="pagination-info" id="paginationInfo">
+                            Showing 0 results
+                        </div>
+                        <div>
+                            <select class="form-select form-select-sm" id="perPageSelect" style="width: auto;">
+                                <option value="25">25 per page</option>
+                                <option value="50">50 per page</option>
+                                <option value="100">100 per page</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Results Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="date" data-sort-dir="desc">
+                                        Date <i class="bi bi-chevron-down sort-icon active"></i>
+                                    </th>
+                                    <th data-sort="time">Time</th>
+                                    <th data-sort="type">Type <i class="bi bi-chevron-expand sort-icon"></i></th>
+                                    <th data-sort="district">District <i class="bi bi-chevron-expand sort-icon"></i></th>
+                                    <th>Address</th>
+                                    <th>Description</th>
+                                    <th data-sort="latitude">Lat <i class="bi bi-chevron-expand sort-icon"></i></th>
+                                    <th data-sort="longitude">Lng <i class="bi bi-chevron-expand sort-icon"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- No Results Message -->
+                    <div class="no-results" id="noResults" style="display: none;">
+                        <i class="bi bi-search"></i>
+                        <h4>No crimes found</h4>
+                        <p>Try adjusting your search filters or search terms</p>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="d-flex justify-content-center mt-4" id="paginationControls">
+                        <nav aria-label="Search results pagination">
+                            <ul class="pagination mb-0" id="paginationList">
+                                <!-- Populated by JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

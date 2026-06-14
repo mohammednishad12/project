@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Crime Data System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Summary Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Crimes</h6>
+                    <h2 class="stat-value" id="stat-total">-</h2>
+                    <p class="stat-subtitle mb-0">in selected period</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Top Crime Type</h6>
+                    <h2 class="stat-value" id="stat-top-type">-</h2>
+                    <p class="stat-subtitle mb-0">most frequent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stat-card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Top District</h6>
+                    <h2 class="stat-value" id="stat-top-district">-</h2>
+                    <p class="stat-subtitle mb-0">most incidents</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Date Range</h6>
+                    <h2 class="stat-value" id="stat-date-range">-</h2>
+                    <p class="stat-subtitle mb-0">selected period</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-md-3 col-12 filter-sidebar">
+            <div class="card filter-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Date Range -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Date Range</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="date" class="form-control" id="filter-start" placeholder="Start Date">
+                            </div>
+                            <div class="col-6">
+                                <input type="date" class="form-control" id="filter-end" placeholder="End Date">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crime Type Multi-Select -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Crime Types</label>
+                        <select class="form-select" id="filter-types" multiple size="6">
+                            <option value="THEFT">THEFT</option>
+                            <option value="BATTERY">BATTERY</option>
+                            <option value="CRIMINAL DAMAGE">CRIMINAL DAMAGE</option>
+                            <option value="NARCOTICS">NARCOTICS</option>
+                            <option value="ASSAULT">ASSAULT</option>
+                            <option value="ROBBERY">ROBBERY</option>
+                            <option value="MOTOR VEHICLE THEFT">MOTOR VEHICLE THEFT</option>
+                            <option value="BURGLARY">BURGLARY</option>
+                            <option value="HOMICIDE">HOMICIDE</option>
+                            <option value="OTHER">OTHER</option>
+                        </select>
+                        <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                    </div>
+
+                    <!-- Area/District Selector -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">District/Area</label>
+                        <select class="form-select" id="filter-area">
+                            <option value="">All Districts</option>
+                            <option value="Central">Central</option>
+                            <option value="North">North</option>
+                            <option value="South">South</option>
+                            <option value="West">West</option>
+                            <option value="East">East</option>
+                            <option value="Northwest">Northwest</option>
+                            <option value="Southwest">Southwest</option>
+                            <option value="Southeast">Southeast</option>
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" id="apply-filters">
+                            <i class="bi bi-check-lg me-2"></i>Apply Filters
+                        </button>
+                        <button class="btn btn-outline-secondary" id="reset-filters">
+                            <i class="bi bi-x-lg me-2"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-12">
+            <!-- Map Row -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-map me-2"></i>Crime Density Heatmap
+                            </h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-light me-2" id="toggle-heatmap">
+                                    <i class="bi bi-fire me-1"></i>Toggle Heatmap
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" id="toggle-points">
+                                    <i class="bi bi-circle me-1"></i>Toggle Points
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="crimeMap" style="height: 500px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <!-- Bar Chart: Crime Frequency by Type -->
+                <div class="col-lg-6 col-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-bar-chart me-2"></i>Crime Frequency by Type
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="typeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pie/Donut Chart: Crime Type Distribution -->
+                <div class="col-lg-6 col-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-pie-chart me-2"></i>Crime Type Distribution
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Series Chart -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-graph-up me-2"></i>Crimes Over Time
+                            </h5>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-light time-toggle" data-period="daily">Daily</button>
+                                <button type="button" class="btn btn-sm btn-outline-light time-toggle active" data-period="monthly">Monthly</button>
+                                <button type="button" class="btn btn-sm btn-outline-light time-toggle" data-period="yearly">Yearly</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-line">
+                                <div id="timeChart" style="height:100%;width:100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet.heat plugin -->
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<!-- Dashboard JS -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
