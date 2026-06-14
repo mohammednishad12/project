@@ -29,6 +29,7 @@ folium==0.20.0
 fonttools==4.63.0
 greenlet==3.5.1
 gyp-next==0.16.2
+gunicorn==25.1.0
 httplib2==0.22.0
 hyperlink==21.0.0
 idna==3.11
