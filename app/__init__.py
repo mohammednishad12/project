@@ -79,4 +79,11 @@ def create_app(config_name='development'):
         from app.models import crime, user, prediction, report
         db.create_all()
 
+        from app.models.crime import Crime
+    if Crime.query.count() == 0:
+        import subprocess, sys, os
+        csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'india_crimes.csv')
+        if os.path.exists(csv_path):
+            print("Database empty — ingesting data from CSV...")
+            subprocess.run([sys.executable, 'scripts/ingest_data.py', csv_path], check=True)
     return app
