@@ -203,8 +203,10 @@ def main():
     print(f"Records loaded: {len(df)}")
     
     # Clean data
-    df_cleaned, duplicates_dropped, imputed_count = clean_data(df)
-    print(f"Cleaned: dropped {duplicates_dropped} duplicates, imputed {imputed_count} values")
+    initial_count = len(df)
+    df_cleaned = clean_data(df)
+    duplicates_dropped = initial_count - len(df_cleaned)
+    print(f"Cleaned: dropped {duplicates_dropped} duplicates")
     
     # Feature engineering
     df_engineered = feature_engineer(df_cleaned)

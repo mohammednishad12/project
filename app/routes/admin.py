@@ -288,7 +288,7 @@ def get_users():
 @admin_required
 def delete_user(user_id):
     """Delete a user by ID."""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
 
     # Can't delete yourself
     if user_id == current_user_id:
@@ -308,7 +308,7 @@ def delete_user(user_id):
 @admin_required
 def update_user_role(user_id):
     """Update a user's role."""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
 
     # Can't change your own role
     if user_id == current_user_id:

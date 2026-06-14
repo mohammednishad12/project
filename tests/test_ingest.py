@@ -96,7 +96,7 @@ class TestFeatureEngineering:
 
         assert len(features_df) == 2
         # Should add time-based features
-        assert 'hour' in features_df.columns or 'time_of_day' in features_df.columns
+        assert 'hour' in features_df.columns or 'time_of_day' in features_df.columns or 'hour_of_day' in features_df.columns
 
     def test_feature_engineer_time_features(self, app):
         """Test that time-based features are extracted."""

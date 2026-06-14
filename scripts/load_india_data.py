@@ -199,8 +199,10 @@ def main():
 
     # Step 4: Clean and ingest data
     print(f"\n[4/4] Cleaning and ingesting data...")
-    df_cleaned, duplicates_dropped, imputed_count = clean_data(df)
-    print(f"Cleaned: dropped {duplicates_dropped} duplicates, imputed {imputed_count} values")
+    initial_count = len(df)
+    df_cleaned = clean_data(df)
+    duplicates_dropped = initial_count - len(df_cleaned)
+    print(f"Cleaned: dropped {duplicates_dropped} duplicates")
 
     df_engineered = feature_engineer(df_cleaned)
 

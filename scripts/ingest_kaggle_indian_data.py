@@ -150,8 +150,10 @@ def main():
     print("\n" + "=" * 60)
     print("DATA CLEANING")
     print("=" * 60)
-    df_cleaned, duplicates_dropped, imputed_count = clean_data(df_mapped)
-    print(f"Cleaned: dropped {duplicates_dropped} duplicates, imputed {imputed_count} values")
+    initial_count = len(df_mapped)
+    df_cleaned = clean_data(df_mapped)
+    duplicates_dropped = initial_count - len(df_cleaned)
+    print(f"Cleaned: dropped {duplicates_dropped} duplicates")
     
     # Feature engineering
     df_engineered = feature_engineer(df_cleaned)

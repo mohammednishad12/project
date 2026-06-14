@@ -107,10 +107,10 @@ def login():
 
     # Create tokens
     access_token = create_access_token(
-        identity=user.id,
+        identity=str(user.id),
         additional_claims={'role': user.role}
     )
-    refresh_token = create_refresh_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=str(user.id))
 
     response = jsonify({
         'message': 'Login successful',
@@ -151,7 +151,7 @@ def logout():
 @jwt_required()
 def get_current_user_info():
     """Get current authenticated user info."""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     user = User.query.get(current_user_id)
 
     if not user:
@@ -164,14 +164,14 @@ def get_current_user_info():
 @jwt_required(refresh=True)
 def refresh():
     """Refresh access token using refresh token from cookie."""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     user = User.query.get(current_user_id)
 
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     access_token = create_access_token(
-        identity=user.id,
+        identity=str(user.id),
         additional_claims={'role': user.role}
     )
 
@@ -185,7 +185,7 @@ def refresh():
 @jwt_required()
 def verify_token():
     """Verify if the current JWT token is valid."""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     claims = get_jwt()
     user = User.query.get(current_user_id)
 

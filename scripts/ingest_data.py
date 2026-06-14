@@ -136,6 +136,7 @@ def parse_time(time_str):
 def clean_data(df):
     """
     Clean the DataFrame:
+    - Standardize column names
     - Drop duplicate rows
     - Drop columns with >30% missing values
     - For remaining columns with missing values: numeric -> median, categorical -> mode
@@ -147,6 +148,9 @@ def clean_data(df):
     
     Returns cleaned DataFrame and cleaning stats.
     """
+    # Standardize column names first
+    df = standardize_column_names(df)
+    
     initial_count = len(df)
     
     # Drop duplicate rows
@@ -188,7 +192,7 @@ def clean_data(df):
         if df[col].dtype == 'object':
             df[col] = df[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
     
-    return df, duplicates_dropped, total_imputed
+    return df
 
 
 def standardize_column_names(df):
@@ -199,10 +203,16 @@ def standardize_column_names(df):
     column_mapping = {}
     
     for col in df.columns:
-        col_lower = col.lower().strip()
+        col_lower = col.lower().strip().replace(' ', '_')
         
+        # Date variations
+        if col_lower in ['date', 'crime_date', 'dt', 'incident_date', 'occurred_date']:
+            column_mapping[col] = 'date'
+        # Time variations
+        elif col_lower in ['time', 'hour', 'incident_time', 'occurred_time', 'crime_time']:
+            column_mapping[col] = 'time'
         # Latitude variations
-        if col_lower in ['latitude', 'lat', 'y']:
+        elif col_lower in ['latitude', 'lat', 'y']:
             column_mapping[col] = 'latitude'
         # Longitude variations
         elif col_lower in ['longitude', 'lng', 'lon', 'long', 'x']:
@@ -492,8 +502,10 @@ def main():
     
     # Clean data
     print(f"Loaded {len(df)} records")
-    df_cleaned, duplicates_dropped, imputed_count = clean_data(df)
-    print(f"Cleaned: dropped {duplicates_dropped} duplicates, imputed {imputed_count} values")
+    initial_count = len(df)
+    df_cleaned = clean_data(df)
+    duplicates_dropped = initial_count - len(df_cleaned)
+    print(f"Cleaned: dropped {duplicates_dropped} duplicates")
     
     # Feature engineering
     df_engineered = feature_engineer(df_cleaned)

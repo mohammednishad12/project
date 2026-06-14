@@ -9,7 +9,7 @@ def jwt_required_custom(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -22,7 +22,7 @@ def admin_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         if not user or user.role != 'admin':
             return jsonify({'error': 'Admin access required'}), 403
@@ -34,7 +34,7 @@ def get_current_user():
     """Helper function to get the current authenticated user from JWT."""
     try:
         verify_jwt_in_request()
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         return User.query.get(current_user_id)
     except Exception:
         return None
